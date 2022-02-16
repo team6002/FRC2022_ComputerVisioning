@@ -54,15 +54,20 @@ while True:
    _, contour_list, _ = cv2.findContours(blackAndWhiteImage, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
 
    cen = []
+   area = []
 
    for contour in contour_list:
       rect = cv2.minAreaRect(contour)
-      center = rect[0]
+      # area.append(rect[1][0] * rect[1][1])
 
-      cen.append(center)
+      #if the rectangle is within a certain size, display it and add it's center
+      if rect[1][0] * rect[1][1] < 20:
+         center = rect[0]
+         cen.append(center)
 
-      cv2.drawContours(output_img, [cv2.boxPoints(rect).astype(int)], -1, color = (0, 0, 255), thickness = 1)
+         cv2.drawContours(output_img, [cv2.boxPoints(rect).astype(int)], -1, color = (0, 0, 255), thickness = 1)
 
+   #if there aren't any contours, set x and y to -1
    if len(cen) == 0:
       shooter_nt.putNumber('cX', -1)
       shooter_nt.putNumber('cY', -1)
@@ -71,7 +76,7 @@ while True:
       sortedCen = sorted(cen, key=lambda x: (x[0], x[1]))
 
       # if even, take the first and last contour and average
-      if(len(sortedCen) % 2 == 0):
+      if len(sortedCen) % 2 == 0:
          averageX = (sortedCen[0][0] + sortedCen[-1][0]) / 2
          averageY = (sortedCen[0][1] + sortedCen[-1][1]) / 2
          averageCen = (averageX, averageY)
@@ -89,11 +94,9 @@ while True:
    output.putFrame(blackAndWhiteImage)
    output2.putFrame(output_img)
 
-   # if counter == 10:
-   #    print("printing X")
-   #    print(shooter_nt.getEntry('cX'))
-   #    print("printing Y")
-   #    print(shooter_nt.getEntry('cY'))
+   # if counter == 20:
+   #    print("printing area: ")
+   #    print(area)
    #    counter = 0
    # else:
    #    counter += 1
