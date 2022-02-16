@@ -40,6 +40,15 @@ counter = 0
 
 time.sleep(2)
 
+#filters out everything but rectangles
+def is_contour_bad(c):
+   #approximates contour
+   peri = cv2.arcLength(c, True)
+   approx = cv2.approxPolyDP(c, 0.02*peri, True)
+
+   #returns if not a rectangle
+   return not len(approx) == 4
+
 while True:
    timeAH, input_img = sink.grabFrame(img)
    output_img = np.copy(input_img)
@@ -54,18 +63,21 @@ while True:
    _, contour_list, _ = cv2.findContours(blackAndWhiteImage, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
 
    cen = []
-   area = []
+   filteredContours = []
+
+   mask = np.ones(output_img.shape[:2], dtype="uint8") * 255
 
    for contour in contour_list:
+      if is_contour_bad(contour) == False:
+         filteredContours.append(contour)
+
+   for contour in filteredContours:
       rect = cv2.minAreaRect(contour)
-      # area.append(rect[1][0] * rect[1][1])
+      
+      center = rect[0]
+      cen.append(center)
 
-      #if the rectangle is within a certain size, display it and add it's center
-      if rect[1][0] * rect[1][1] < 20:
-         center = rect[0]
-         cen.append(center)
-
-         cv2.drawContours(output_img, [cv2.boxPoints(rect).astype(int)], -1, color = (0, 0, 255), thickness = 1)
+      cv2.drawContours(output_img, [cv2.boxPoints(rect).astype(int)], -1, color = (0, 0, 255), thickness = 1)
 
    #if there aren't any contours, set x and y to -1
    if len(cen) == 0:
@@ -95,8 +107,7 @@ while True:
    output2.putFrame(output_img)
 
    # if counter == 20:
-   #    print("printing area: ")
-   #    print(area)
+      
    #    counter = 0
    # else:
    #    counter += 1
