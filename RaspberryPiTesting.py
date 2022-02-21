@@ -28,10 +28,14 @@ shooter_nt = NetworkTables.getTable('Turret')
 cs = CameraServer.getInstance()
 cs.enableLogging()
 
-camera = cs.startAutomaticCapture()
+camera = cs.startAutomaticCapture(dev=0)
 camera.setResolution(160, 120)
 
+camera1 = cs.startAutomaticCapture(dev=1)
+camera1.setResolution(160, 120)
+
 sink = cs.getVideo()
+sink1 = cs.getVideo()
 output = cs.putVideo("Black and White", 160, 120) 
 output2 = cs.putVideo("Contour", 160, 120) 
 img = np.zeros(shape=(120, 160, 3), dtype=np.uint8)
@@ -41,19 +45,12 @@ counter = 450
 
 time.sleep(2)
 
-#filters out everything but rectangles
-def is_contour_bad(c):
-   #approximates contour
-   peri = cv2.arcLength(c, True)
-   approx = cv2.approxPolyDP(c, 0.02*peri, True)
-
-   #returns if not a rectangle
-   return not len(approx) == 4
-
 def computeYoshi(TUPLE, TPLEU):
    return math.sqrt((TUPLE[0] - TPLEU[0])**2 + (TUPLE[1] - TPLEU[1])**2)
 
 lastYoshi = (0, 0)
+MAX_CONTOUR_AREA = 45
+MIN_CONTOUR_AREA = 5
 
 while True:
    timeAH, input_img = sink.grabFrame(img)
@@ -69,7 +66,6 @@ while True:
    _, contour_list, _ = cv2.findContours(blackAndWhiteImage, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
 
    cen = []
-   ratio = []
 
    for index, contour in enumerate(contour_list):
       rect = cv2.minAreaRect(contour)
@@ -85,23 +81,24 @@ while True:
       #take ratio of min rect and contour
       ratioArea = contourArea / rectArea
 
-      #if the ratio is larger than 80%, add contour
-      if ratioArea >= .75:
-         center = rect[0]
-         cen.append(center)
-      # cen.append(rect[0])
-      else:
+      #get rid of contours beyond the size of hub rects
+      if contourArea >= MAX_CONTOUR_AREA or contourArea <= MIN_CONTOUR_AREA:
          continue
+
+      #if the ratio is larger than 80%, add contour
+      if ratioArea < .65:
+         continue
+      
+      #add center of contours to list
+      center = rect[0]
+      cen.append(center)
 
       #TEXT
       image = cv2.putText(output_img, "{:.2f}".format(ratioArea), (int(rect[0][0]), int(rect[0][1])), cv2.FONT_HERSHEY_SIMPLEX, 0.25, (0, 255, 0), 1, cv2.LINE_AA)
       
       cv2.drawContours(output_img, [cv2.boxPoints(rect).astype(int)], -1, color = (0, 0, 255), thickness = 1)
-   
-   if counter == 500:
-      counter = 0
-   else:
-      counter += 1
+
+   shooter_nt.putNumber("number of contours", len(cen))
 
    #if there aren't any contours, set x and y to -1
    if len(cen) == 0:
@@ -131,11 +128,11 @@ while True:
       # shooter_nt.putNumber('yoshiyoshi', yoshi)
 
       #places a crosshair at center
-      cv2.drawMarker(output_img, (int(averageCen[0]),int(averageCen[1])), color=(0,255,0), markerType=cv2.MARKER_CROSS, thickness=1)
+      cv2.drawMarker(output_img, (int(averageCen[0]),int(averageCen[1])), color=(0, 255, 0), markerType=cv2.MARKER_CROSS, thickness=1)
 
       #puts number to networktable
       shooter_nt.putNumber('cX', averageCen[0])
       shooter_nt.putNumber('cY', averageCen[1])
    
    output.putFrame(blackAndWhiteImage)
-   output2.putFrame(output_img)  
+   output2.putFrame(output_img)
