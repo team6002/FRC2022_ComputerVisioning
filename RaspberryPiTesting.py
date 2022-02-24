@@ -1,4 +1,3 @@
-from turtle import up
 from cscore import CameraServer
 from networktables import NetworkTablesInstance
 from networktables import NetworkTables
@@ -30,7 +29,7 @@ cs = CameraServer.getInstance()
 cs.enableLogging()
 
 # infrared camera
-camera = cs.startAutomaticCapture(dev=0)
+camera = cs.startAutomaticCapture()
 camera.setResolution(160, 120)
 
 sink = cs.getVideo()
@@ -38,11 +37,11 @@ output = cs.putVideo("Black and White", 160, 120)
 output2 = cs.putVideo("Contour", 160, 120) 
 img = np.zeros(shape=(120, 160, 3), dtype=np.uint8)
 
-# ball detection cameras
-camera1 = cs.startAutomaticCapture(dev=1)
-camera1.setResolution(160, 120)
+# # ball detection cameras
+# camera1 = cs.startAutomaticCapture(dev=1)
+# camera1.setResolution(160, 120)
 
-sink1 = cs.getVideo()
+# sink1 = cs.getVideo()
 
 print("done")
 counter = 450
@@ -64,30 +63,30 @@ lowerBlue = ()
 upperBlue = ()
 
 while True:
-   timeAH, input_img1 = sink1.grabFrame(img)
+   # timeAH, input_img1 = sink1.grabFrame(img)
 
-   if timeAH == 0: # There is an error
-      output.notifyError(sink1.getError())
-      continue
+   # if timeAH == 0: # There is an error
+   #    output.notifyError(sink1.getError())
+   #    continue
 
-   # gets rid of high frequency noise and converts to a HSV color space
-   blurred = cv2.GaussianBlur(input_img1, (11, 11), 0)
-   hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+   # # gets rid of high frequency noise and converts to a HSV color space
+   # blurred = cv2.GaussianBlur(input_img1, (11, 11), 0)
+   # hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
 
-   # masks the blue ball
-   mask = cv2.inRange(hsv, lowerBlue, upperBlue)
-   mask = cv2.erode(mask, None, iterations=2)
-   mask = cv2.dilate(mask, None, iterations=2)
+   # # masks the blue ball
+   # mask = cv2.inRange(hsv, lowerBlue, upperBlue)
+   # mask = cv2.erode(mask, None, iterations=2)
+   # mask = cv2.dilate(mask, None, iterations=2)
 
-   _, contour_list1, _ = cv2.findContours(mask.copy(), mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
+   # _, contour_list1, _ = cv2.findContours(mask.copy(), mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
 
-   center = 0
-   if len(contour_list1) > 0:
-      # finds largest contour, masks it, and finds the radius
-      c = max(contour_list1, key=cv2.contourArea)
-      ((x,y), radius) = cv2.minEnclosingCircle(c)
-      M = cv2.moments(c)
-      center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+   # center = 0
+   # if len(contour_list1) > 0:
+   #    # finds largest contour, masks it, and finds the radius
+   #    c = max(contour_list1, key=cv2.contourArea)
+   #    ((x,y), radius) = cv2.minEnclosingCircle(c)
+   #    M = cv2.moments(c)
+   #    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
 
    # turret camera
