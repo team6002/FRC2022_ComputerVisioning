@@ -122,7 +122,7 @@ while True:
       if contourArea >= MAX_CONTOUR_AREA or contourArea <= MIN_CONTOUR_AREA:
          continue
 
-      # if the ratio is larger than 80%, add contour
+      # if the ratio is larger than 65%, add contour
       if ratioArea < .65:
          continue
       
@@ -135,7 +135,7 @@ while True:
       
       cv2.drawContours(output_img, [cv2.boxPoints(rect).astype(int)], -1, color = (0, 0, 255), thickness = 1)
 
-   shooter_nt.putNumber("number of contours", len(cen))
+   # shooter_nt.putNumber("number of contours", len(cen))
 
    #  there aren't any contours, set x and y to -1
    if len(cen) == 0:
