@@ -170,6 +170,10 @@ while True:
       # puts number to networktable
       shooter_nt.putNumber('cX', averageCen[0])
       shooter_nt.putNumber('cY', averageCen[1])
+
+      #debugging hunt function
+      # shooter_nt.putNumber('cX', -1)
+      # shooter_nt.putNumber('cY', -1)
    
    output.putFrame(blackAndWhiteImage)
    output2.putFrame(output_img)
