@@ -63,32 +63,6 @@ lowerBlue = ()
 upperBlue = ()
 
 while True:
-   # timeAH, input_img1 = sink1.grabFrame(img)
-
-   # if timeAH == 0: # There is an error
-   #    output.notifyError(sink1.getError())
-   #    continue
-
-   # # gets rid of high frequency noise and converts to a HSV color space
-   # blurred = cv2.GaussianBlur(input_img1, (11, 11), 0)
-   # hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
-
-   # # masks the blue ball
-   # mask = cv2.inRange(hsv, lowerBlue, upperBlue)
-   # mask = cv2.erode(mask, None, iterations=2)
-   # mask = cv2.dilate(mask, None, iterations=2)
-
-   # _, contour_list1, _ = cv2.findContours(mask.copy(), mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
-
-   # center = 0
-   # if len(contour_list1) > 0:
-   #    # finds largest contour, masks it, and finds the radius
-   #    c = max(contour_list1, key=cv2.contourArea)
-   #    ((x,y), radius) = cv2.minEnclosingCircle(c)
-   #    M = cv2.moments(c)
-   #    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-
-
    # turret camera
    timeAH, input_img = sink.grabFrame(img)
    output_img = np.copy(input_img)
@@ -174,6 +148,8 @@ while True:
       #debugging hunt function
       # shooter_nt.putNumber('cX', -1)
       # shooter_nt.putNumber('cY', -1)
-   
+
+   verticalFlip = cv2.flip(output_img, 0)
+
    output.putFrame(blackAndWhiteImage)
-   output2.putFrame(output_img)
+   output2.putFrame(verticalFlip)
