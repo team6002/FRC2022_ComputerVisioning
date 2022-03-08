@@ -99,6 +99,10 @@ while True:
       # if the ratio is larger than 65%, add contour
       if ratioArea < .65:
          continue
+
+      #if the contour is below a certain y value, reject
+      if rect[0][1] < 50:
+         continue
       
       # add center of contours to list
       center = rect[0]
