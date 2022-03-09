@@ -1,3 +1,4 @@
+from pydoc import apropos
 from cscore import CameraServer
 from networktables import NetworkTablesInstance
 from networktables import NetworkTables
@@ -7,7 +8,6 @@ import numpy as np
 import logging
 import sys
 import time
-import math
 
 print("start")
 team = 6002
@@ -37,11 +37,13 @@ output = cs.putVideo("Black and White", 160, 120)
 output2 = cs.putVideo("Contour", 160, 120) 
 img = np.zeros(shape=(120, 160, 3), dtype=np.uint8)
 
-# # ball detection cameras
-# camera1 = cs.startAutomaticCapture(dev=1)
-# camera1.setResolution(160, 120)
+# camera = cs.startAutomaticCapture()
+# camera.setResolution(320, 240)
 
-# sink1 = cs.getVideo()
+# sink = cs.getVideo()
+# output = cs.putVideo("Black and White", 320, 240) 
+# output2 = cs.putVideo("Contour", 320, 240) 
+# img = np.zeros(shape=(320, 240, 3), dtype=np.uint8)
 
 print("done")
 counter = 450
@@ -72,11 +74,41 @@ while True:
       continue
 
    grayImage = cv2.cvtColor(input_img, cv2.COLOR_BGR2GRAY)
-   thresh, blackAndWhiteImage = cv2.threshold(grayImage, 127, 255, cv2.THRESH_BINARY)
+   blurred = cv2.GaussianBlur(grayImage, (7, 7), 0)
+   thresh, blackAndWhiteImage = cv2.threshold(blurred, 127, 255, cv2.THRESH_BINARY)
+   edged = cv2.Canny(blackAndWhiteImage, 50, 150)
 
-   _, contour_list, _ = cv2.findContours(blackAndWhiteImage, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
+   _, contour_list, _ = cv2.findContours(edged, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
 
    cen = []
+
+   # for c in contour_list:
+   #    #approx contour
+   #    peri = cv2.arcLength(c, True)
+   #    approx = cv2.approxPolyDP(c, 0.01*peri, True)
+
+   #    #if contour is retangular
+   #    if len(approx) >= 4 and len(approx) <= 6:
+   #       #bounding box of contour
+   #       (x, y, w, h) = cv2.boundingRect(approx)
+   #       aspectRatio = w / float(h)
+
+   #       #area of og contour
+   #       area = cv2.contourArea(c)
+   #       hullArea = cv2.contourArea(cv2.convexHull(c))
+   #       solidity = area / float(hullArea)
+
+   #       #check the bounding box to og contour
+   #       godDims = w > 25 and h > 25
+   #       godSolidity = solidity > 0.9
+   #       godRatio = aspectRatio >= 0.8 and aspectRatio <= 1.2
+
+   #       #if contour is god tier
+   #       if godDims and godSolidity and godRatio:
+   #          #outline target
+   #          cv2.drawContours(output_img, [approx], -1, (0, 0, 255), 1)
+   #          # print("GOD TIER")
+   #          cen.append((x, y))
 
    for index, contour in enumerate(contour_list):
       rect = cv2.minAreaRect(contour)
@@ -112,8 +144,6 @@ while True:
       image = cv2.putText(output_img, "{:.2f}".format(ratioArea), (int(rect[0][0]), int(rect[0][1])), cv2.FONT_HERSHEY_SIMPLEX, 0.25, (0, 255, 0), 1, cv2.LINE_AA)
       
       cv2.drawContours(output_img, [cv2.boxPoints(rect).astype(int)], -1, color = (0, 0, 255), thickness = 1)
-
-   # shooter_nt.putNumber("number of contours", len(cen))
 
    #  there aren't any contours, set x and y to -1
    if len(cen) == 0:
@@ -154,6 +184,7 @@ while True:
       # shooter_nt.putNumber('cY', -1)
 
    verticalFlip = cv2.flip(output_img, 0)
+   horizontalFlip = cv2.flip(verticalFlip, 1)
 
    output.putFrame(blackAndWhiteImage)
-   output2.putFrame(verticalFlip)
+   output2.putFrame(horizontalFlip)
