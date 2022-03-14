@@ -183,8 +183,12 @@ while True:
       # shooter_nt.putNumber('cX', -1)
       # shooter_nt.putNumber('cY', -1)
 
+   # cv2.drawMarker(output_img, 80, 60, color=(0, 255, 0), markerType=cv2.MARKER_CROSS, thickness=1)
+   cv2.line(output_img, (0, 60), (160, 60), color=(0, 0, 255), thickness=1)
+   cv2.line(output_img, (80, 0), (80, 120), color=(255, 0, 0), thickness=1)
+
    verticalFlip = cv2.flip(output_img, 0)
    horizontalFlip = cv2.flip(verticalFlip, 1)
 
-   output.putFrame(blackAndWhiteImage)
+   # output.putFrame(blackAndWhiteImage)
    output2.putFrame(horizontalFlip)
